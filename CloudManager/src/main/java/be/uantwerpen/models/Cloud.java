@@ -34,9 +34,16 @@ public class Cloud
         return this.servers;
     }
 
-    public void addServer(Server server)
+    public boolean addServer(Server server)
     {
-        this.servers.add(server);
+        if(!this.servers.contains(server))
+        {
+            return this.servers.add(server);
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public boolean removeServer(Server server)

@@ -4,6 +4,7 @@ import be.uantwerpen.models.Cloud;
 import be.uantwerpen.models.User;
 import be.uantwerpen.services.CloudManager;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -22,7 +23,12 @@ public class CloudManagerApplication implements CommandLineRunner
 
 		CloudManager cloudManager = new CloudManager(oneCloud);
 
-		cloudManager.listSetup();
+		if(cloudManager.loadServerList())
+		{
+			cloudManager.printServerStatus();
+		}
+
+		System.exit(0);
 		/*
 		ServerMonitor serverMonitor = new ServerMonitor(2000);
 
@@ -35,7 +41,5 @@ public class CloudManagerApplication implements CommandLineRunner
 			System.out.println("CPUload: " + serverMonitor.getServers().get(0).getAverageCPULoad(10));
 			Thread.sleep(5000);
 		}*/
-
-		System.out.println("BYE");
 	}
 }

@@ -139,4 +139,22 @@ public class Server
 
         return sum / numOfSamples;
     }
+
+    @Override
+    public boolean equals(Object object)
+    {
+        if(!object.getClass().equals(Server.class))
+        {
+            return false;
+        }
+
+        if(((Server)object).getIpaddr().equals(this.ipaddr) && (((Server)object).getID() == this.id))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }
