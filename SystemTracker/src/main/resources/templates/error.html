@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head th:replace="layout :: head (pageTitle=#{error.title})"></head>
+<body>
+    Error: something went wrong. We are sorry for the inconvenience.
+    Please contact the operator with the information below.
+    <div th:text="${title}">Error</div>
+    <div th:text="${message}">Fake content</div>
+
+    <!-- Import footer -->
+    <div th:replace="layout :: footer"></div>
+</body>
+</html>

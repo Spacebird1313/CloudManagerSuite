@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/drivers/sigar/libsigar-amd64-linux.so" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/drivers/sigar/libsigar-ia64-linux.so" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/drivers/sigar/libsigar-ppc-linux.so" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/drivers/sigar/libsigar-ppc64-linux.so" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/drivers/sigar/libsigar-s390x-linux.so" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/drivers/sigar/libsigar-x86-linux.so" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/drivers/sigar/sigar-amd64-winnt.dll" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/drivers/sigar/sigar-x86-winnt.dll" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/images/SystemTrackerLogo.png" charset="windows-1252" />
+  </component>
+</project>
