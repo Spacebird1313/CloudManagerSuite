@@ -8,6 +8,7 @@ import org.opennebula.client.template.Template;
 import org.opennebula.client.template.TemplatePool;
 import org.opennebula.client.vm.VirtualMachine;
 import org.opennebula.client.vm.VirtualMachinePool;
+import org.springframework.stereotype.Service;
 import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
@@ -17,45 +18,44 @@ import java.util.List;
 /**
  * Created by Thomas on 15/02/2016.
  */
+@Service
 public class CloudManager
 {
-    private Cloud cloud;
-
-    public CloudManager(Cloud cloud)
+    public CloudManager()
     {
-        this.cloud = cloud;
+
     }
 
-    public Boolean createVMFromTemplate(int templateId)
+    public static Boolean createVMFromTemplate(Cloud cloud, int templateId)
     {
         Client oneClient;
         OneResponse oneResponse;
 
-        oneClient = this.getClientConnection();
+        oneClient = getClientConnection(cloud);
 
         if(oneClient == null)
         {
             return false;
         }
 
-        return this.instantiateTemplate(oneClient, templateId);
+        return instantiateTemplate(cloud, oneClient, templateId);
     }
 
-    public Boolean createVMFromTemplate(String templateName)
+    public static Boolean createVMFromTemplate(Cloud cloud, String templateName)
     {
         Client oneClient;
         OneResponse oneResponse;
         List<Template> templateList;
         Template template;
 
-        oneClient = this.getClientConnection();
+        oneClient = getClientConnection(cloud);
 
         if(oneClient == null)
         {
             return false;
         }
 
-        templateList = this.getTemplateList();
+        templateList = getTemplateList(cloud);
 
         if(templateList == null)
         {
@@ -81,7 +81,7 @@ public class CloudManager
 
         if(found)
         {
-            return this.instantiateTemplate(oneClient, Integer.parseInt(templateList.get(i).getId()));
+            return instantiateTemplate(cloud, oneClient, Integer.parseInt(templateList.get(i).getId()));
         }
         else
         {
@@ -91,7 +91,7 @@ public class CloudManager
         }
     }
 
-    private Boolean instantiateTemplate(Client oneClient, int templateId)
+    private static Boolean instantiateTemplate(Cloud cloud, Client oneClient, int templateId)
     {
         OneResponse oneResponse;
         int newVMId;
@@ -108,15 +108,7 @@ public class CloudManager
             return false;
         }
 
-        newVMId = oneResponse.getIntMessage();
-
-        ipAddress = this.getIPAddress(newVMId);
-
-        if(ipAddress != null)
-        {
-            cloud.addServer(new Server(newVMId, ipAddress));
-        }
-        else
+        if(!loadServerList(cloud))
         {
             System.err.println("Could not retrieve IP address of new VM instance");
 
@@ -126,12 +118,12 @@ public class CloudManager
         return true;
     }
 
-    public Boolean loadServerList()
+    public static Boolean loadServerList(Cloud cloud)
     {
         NodeList nodes;
         List<VirtualMachine> vmList;
 
-        vmList = this.getVMList();
+        vmList = getVMList(cloud);
 
         if(vmList != null)
         {
@@ -143,7 +135,14 @@ public class CloudManager
 
                     if(nodes.getLength() > 0)
                     {
-                        cloud.addServer(new Server(Integer.parseInt(vmList.get(i).getId()), nodes.item(0).getTextContent()));
+                        Server server = new Server(Integer.parseInt(vmList.get(i).getId()), nodes.item(0).getTextContent());
+
+                        if(vmList.get(i).state() == 3)
+                        {
+                            server.setOperationalState(true);
+                        }
+
+                        cloud.updateServer(server);
                     }
                 }
                 catch(Exception ex)
@@ -161,13 +160,13 @@ public class CloudManager
         return true;
     }
 
-    public String getIPAddress(int vmID)
+    public static String getIPAddress(Cloud cloud, int vmID)
     {
         NodeList nodes;
         List<VirtualMachine> vmList;
         VirtualMachine vm;
 
-        vmList = this.getVMList();
+        vmList = getVMList(cloud);
 
         if(vmList != null)
         {
@@ -215,7 +214,7 @@ public class CloudManager
         return null;
     }
 
-    private Client getClientConnection()
+    private static Client getClientConnection(Cloud cloud)
     {
         try
         {
@@ -231,7 +230,7 @@ public class CloudManager
         }
     }
 
-    private List<VirtualMachine> getVMList()
+    private static List<VirtualMachine> getVMList(Cloud cloud)
     {
         Client oneClient;
         OneResponse oneResponse;
@@ -239,7 +238,7 @@ public class CloudManager
         NodeList nodes;
         List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
 
-        oneClient = this.getClientConnection();
+        oneClient = getClientConnection(cloud);
 
         if(oneClient == null)
         {
@@ -278,7 +277,7 @@ public class CloudManager
         return vmList;
     }
 
-    private List<Template> getTemplateList()
+    private static List<Template> getTemplateList(Cloud cloud)
     {
         Client oneClient;
         OneResponse oneResponse;
@@ -286,7 +285,7 @@ public class CloudManager
         NodeList nodes;
         List<Template> templateList = new ArrayList<Template>();
 
-        oneClient = this.getClientConnection();
+        oneClient = getClientConnection(cloud);
 
         if(oneClient == null)
         {
@@ -325,16 +324,31 @@ public class CloudManager
         return templateList;
     }
 
-    public void printServerStatus()
+    public static void printServersStatus(Cloud cloud)
     {
-        System.out.println("#\tServer ID\t\tServer IP\t\tCPU-Load");
+        System.out.println("#\tServer ID\t\tServer IP\t\tActive\t\tCPU-Load");
 
         for(int i = 0; i < cloud.getServers().size(); i++)
         {
             System.out.print(i + "\t");
             System.out.print(cloud.getServers().get(i).getID() + "\t\t\t");
             System.out.print(cloud.getServers().get(i).getIpaddr() + "\t\t");
+            System.out.print(cloud.getServers().get(i).getOperationalState() + "\t\t");
             System.out.println(cloud.getServers().get(i).getAverageCPULoad(1));
+        }
+    }
+
+    public static void printTemplatePool(Cloud cloud)
+    {
+        List<Template> templateList = getTemplateList(cloud);
+
+        System.out.println("#\tTemplate ID\t\t Template name");
+
+        for(int i = 0; i < templateList.size(); i++)
+        {
+            System.out.print(i + "\t\t");
+            System.out.print(templateList.get(i).getId() + "\t\t\t");
+            System.out.println(templateList.get(i).getName());
         }
     }
 }
