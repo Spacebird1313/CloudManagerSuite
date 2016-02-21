@@ -84,6 +84,19 @@ public class ApplicationManager
         return CloudManager.createVMFromTemplate(oneCloud, templateName);
     }
 
+    public boolean deleteVM(int vmId)
+    {
+        return CloudManager.deleteVM(oneCloud, vmId);
+    }
+
+    public void clearCloudInfo()
+    {
+        String oldCloudURL = oneCloud.getURL();
+        User oldCloudUser = oneCloud.getLoginCredentials();
+
+        oneCloud = new Cloud(oldCloudURL, oldCloudUser);
+    }
+
     public void updateCloudInfo()
     {
         CloudManager.loadServerList(oneCloud);

@@ -12,12 +12,14 @@ public class CloudManagerApplication
 
 	private static String cloudIP;
 	private static User cloudUser;
+	private static Boolean hotStart;
 
 	public static void main(String[] args)
 	{
 		//Default values
 		cloudIP = "127.0.0.1:9869";
 		cloudUser = new User();
+		hotStart = false;
 
 		application = new ApplicationManager();
 
@@ -91,13 +93,17 @@ public class CloudManagerApplication
 							System.out.println("Invalid arguments for -user");
 						}
 						break;
+					case "-hotstart":
+						hotStart = true;
+						break;
 					case "-help":
 						System.out.println("Cloud Manager application - 2016");
 						System.out.println("Starts the manager application for monitoring OpenNebula VM's with the SystemTracker software installed.");
 						System.out.println("\nOptions:");
-						System.out.println("\t-ip {ip}:{port}\t\tThe given ip to connect to the cloud server.");
+						System.out.println("\t-ip {ip}:{port}\t\t\tThe given ip to connect to the cloud server.");
 						System.out.println("\t-user {name}:{password}\tThe given user credentials to access the cloud server.");
-						System.out.println("\t-help\t\t\tDisplays the current help options.");
+						System.out.println("\t-hotStart\t\t\t\tStart the VM monitoring immediately after program initialisation.");
+						System.out.println("\t-help\t\t\t\t\tDisplays the current help options.");
 						System.exit(0);
 					default:
 						System.out.println("Unknown option '" + args[i] + "'");

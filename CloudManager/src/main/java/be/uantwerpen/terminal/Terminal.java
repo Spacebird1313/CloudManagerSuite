@@ -92,6 +92,16 @@ public class Terminal
                         }
                     }
                     break;
+                case "deletevm":
+                    if(commandString.split(" ", 2).length <= 1)
+                    {
+                        printTerminalInfo("Missing arguments! 'deleteVM {id}'");
+                    }
+                    else
+                    {
+                        deleteVM(Integer.parseInt(commandString.split(" ", 2)[1]));
+                    }
+                    break;
                 case "showservers":
                     printServerList();
                     break;
@@ -99,7 +109,21 @@ public class Terminal
                     printTemplatePool();
                     break;
                 case "update":
-                    updateCloudInfo();
+                    if(commandString.split(" ", 2).length == 2)
+                    {
+                        if(commandString.split(" ", 2)[1].equals("force"))
+                        {
+                            forceUpdateCloudInfo();
+                        }
+                        else
+                        {
+                            printTerminalInfo("Unknown option for update: '" + commandString.split(" ", 2)[1]);
+                        }
+                    }
+                    else
+                    {
+                        updateCloudInfo();
+                    }
                     break;
                 case "set":
                     if(commandString.split(" ", 3).length <= 2)
@@ -148,9 +172,6 @@ public class Terminal
                             printTerminalInfo("Property: " + property + " --> Value: " + value);
                         }
                     }
-                    break;
-                case "showcloudinfo":
-                    printCloudInfo();
                     break;
                 case "help":
                 case "?":
@@ -233,14 +254,27 @@ public class Terminal
         }
     }
 
+    private void deleteVM(int vmId)
+    {
+        if(application.deleteVM(vmId))
+        {
+            printTerminalInfo("VM successful deleted!");
+        }
+        else
+        {
+            printTerminalError("VM could not be deleted!");
+        }
+    }
+
     private void updateCloudInfo()
     {
         application.updateCloudInfo();
     }
 
-    private void printCloudInfo()
+    private void forceUpdateCloudInfo()
     {
-
+        application.clearCloudInfo();
+        application.updateCloudInfo();
     }
 
     private void printServerList()
@@ -276,8 +310,9 @@ public class Terminal
                 printTerminal("-------------------");
                 printTerminal("'showServers' : show the list of all VMs on the cloud.");
                 printTerminal("'showTemplates' : show the list of all templates on the cloud.");
-                printTerminal("'update' : retrieve the latest information of the cloud.");
+                printTerminal("'update [force]' : retrieve the latest information of the cloud. Use [force] to clear the list and recreate the data.");
                 printTerminal("'createVM {id | name} {value}' : instantiate a new VM from a known template with id or name.");
+                printTerminal("'deleteVM {id}' : delete an existing VM on the cloud with the given id. CANNOT BE UNDONE!");
                 printTerminal("'set {parameter} {value}' : set a value for a given property key.");
                 printTerminal("'get {parameter}' : get the value of a given property key.");
                 printTerminal("'stop' : shutdown the application.");

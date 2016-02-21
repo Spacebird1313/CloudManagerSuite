@@ -91,6 +91,56 @@ public class CloudManager
         }
     }
 
+    public static Boolean deleteVM(Cloud cloud, int vmId)
+    {
+        Client oneClient;
+        OneResponse oneResponse;
+        List<VirtualMachine> vmList;
+        VirtualMachine deleteVM = null;
+        String ipAddress;
+
+        oneClient = getClientConnection(cloud);
+
+        vmList = getVMList(cloud);
+
+        Iterator<VirtualMachine> it = vmList.iterator();
+
+        while(it.hasNext() && deleteVM == null)
+        {
+            VirtualMachine vm = it.next();
+
+            if(Integer.parseInt(vm.getId()) == vmId)
+            {
+                deleteVM = vm;
+            }
+        }
+
+        if(deleteVM != null)
+        {
+            ipAddress = getIPAddress(cloud, vmId);
+            oneResponse = deleteVM.delete();
+        }
+        else
+        {
+            System.err.println("Could not find VM with id: " + vmId);
+
+            return false;
+        }
+
+        if(oneResponse.isError())
+        {
+            System.err.println("Could not delete VM with id: " + vmId);
+            System.err.println(oneResponse.getErrorMessage());
+
+            return false;
+        }
+        else
+        {
+            cloud.removeServer(new Server(vmId, ipAddress));
+            return true;
+        }
+    }
+
     private static Boolean instantiateTemplate(Cloud cloud, Client oneClient, int templateId)
     {
         OneResponse oneResponse;

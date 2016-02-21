@@ -66,7 +66,7 @@ public class Cloud
 
                 if(aServer.equals(server))
                 {
-                    server.setOperationalState(aServer.getOperationalState());
+                    aServer.setOperationalState(server.getOperationalState());
 
                     found = true;
                 }
