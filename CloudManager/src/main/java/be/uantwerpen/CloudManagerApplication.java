@@ -34,6 +34,11 @@ public class CloudManagerApplication
 
 		//System ready to operate
 		ApplicationManager.systemReady();
+
+		if(hotStart)
+		{
+			application.startMonitoring();
+		}
 	}
 
 /*

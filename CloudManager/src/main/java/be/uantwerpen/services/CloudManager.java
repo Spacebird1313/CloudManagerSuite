@@ -26,7 +26,7 @@ public class CloudManager
 
     }
 
-    public static Boolean createVMFromTemplate(Cloud cloud, int templateId)
+    public static int createVMFromTemplate(Cloud cloud, int templateId)
     {
         Client oneClient;
         OneResponse oneResponse;
@@ -35,13 +35,13 @@ public class CloudManager
 
         if(oneClient == null)
         {
-            return false;
+            return -1;
         }
 
         return instantiateTemplate(cloud, oneClient, templateId);
     }
 
-    public static Boolean createVMFromTemplate(Cloud cloud, String templateName)
+    public static int createVMFromTemplate(Cloud cloud, String templateName)
     {
         Client oneClient;
         OneResponse oneResponse;
@@ -52,14 +52,14 @@ public class CloudManager
 
         if(oneClient == null)
         {
-            return false;
+            return -1;
         }
 
         templateList = getTemplateList(cloud);
 
         if(templateList == null)
         {
-            return false;
+            return -1;
         }
 
         int i = 0;
@@ -87,7 +87,7 @@ public class CloudManager
         {
             System.err.println("Template with name: " + templateName + " does not exist on the server!");
 
-            return false;
+            return -1;
         }
     }
 
@@ -141,7 +141,7 @@ public class CloudManager
         }
     }
 
-    private static Boolean instantiateTemplate(Cloud cloud, Client oneClient, int templateId)
+    private static int instantiateTemplate(Cloud cloud, Client oneClient, int templateId)
     {
         OneResponse oneResponse;
         int newVMId;
@@ -155,17 +155,17 @@ public class CloudManager
             System.err.println("Template could not be instantiated!");
             System.err.println(oneResponse.getErrorMessage());
 
-            return false;
+            return -1;
         }
 
         if(!loadServerList(cloud))
         {
             System.err.println("Could not retrieve IP address of new VM instance");
 
-            return false;
+            return -1;
         }
 
-        return true;
+        return oneResponse.getIntMessage();
     }
 
     public static Boolean loadServerList(Cloud cloud)

@@ -125,6 +125,12 @@ public class Terminal
                         updateCloudInfo();
                     }
                     break;
+                case "startmonitor":
+                    startMonitoring();
+                    break;
+                case "stopmonitor":
+                    stopMonitoring();
+                    break;
                 case "set":
                     if(commandString.split(" ", 3).length <= 2)
                     {
@@ -266,6 +272,34 @@ public class Terminal
         }
     }
 
+    private void startMonitoring()
+    {
+        if(!application.getMonitoringState())
+        {
+            application.startMonitoring();
+
+            printTerminalInfo("Monitoring service started...");
+        }
+        else
+        {
+            printTerminalInfo("Monitoring service is already running!");
+        }
+    }
+
+    private void stopMonitoring()
+    {
+        if(application.getMonitoringState())
+        {
+            application.stopMonitoring();
+
+            printTerminalInfo("Monitoring service halted.");
+        }
+        else
+        {
+            printTerminalInfo("No active monitoring instance running!");
+        }
+    }
+
     private void updateCloudInfo()
     {
         application.updateCloudInfo();
@@ -311,6 +345,8 @@ public class Terminal
                 printTerminal("'showServers' : show the list of all VMs on the cloud.");
                 printTerminal("'showTemplates' : show the list of all templates on the cloud.");
                 printTerminal("'update [force]' : retrieve the latest information of the cloud. Use [force] to clear the list and recreate the data.");
+                printTerminal("'startMonitor : start monitoring all active VMs on the cloud with a running instance of System Tracker software.");
+                printTerminal("'stopMonitor : stop monitoring the VMs on the cloud.");
                 printTerminal("'createVM {id | name} {value}' : instantiate a new VM from a known template with id or name.");
                 printTerminal("'deleteVM {id}' : delete an existing VM on the cloud with the given id. CANNOT BE UNDONE!");
                 printTerminal("'set {parameter} {value}' : set a value for a given property key.");

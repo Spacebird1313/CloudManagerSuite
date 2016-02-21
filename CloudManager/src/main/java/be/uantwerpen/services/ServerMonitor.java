@@ -1,7 +1,7 @@
 package be.uantwerpen.services;
 
 import be.uantwerpen.models.Server;
-import org.springframework.beans.factory.annotation.Autowired;
+import be.uantwerpen.tools.Observer;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,6 +19,9 @@ public class ServerMonitor
     private long pollInterval;
     private Boolean serviceRunning;
     private Thread monitorThread;
+    private Observer observer;
+
+    private int loadLimitPerc;
 
     public ServerMonitor()
     {
@@ -26,6 +29,9 @@ public class ServerMonitor
         this.servers = new ArrayList<Server>();
         this.serviceRunning = false;
         this.serverPoller = new ServerPoller();
+        this.observer = new Observer();
+
+        this.loadLimitPerc = 89;
     }
 
     public ServerMonitor(long pollInterval)
@@ -34,6 +40,34 @@ public class ServerMonitor
         this.servers = new ArrayList<Server>();
         this.serviceRunning = false;
         this.serverPoller = new ServerPoller();
+        this.observer = new Observer();
+
+        this.loadLimitPerc = 89;
+    }
+
+    public Observer getObserver()
+    {
+        return this.observer;
+    }
+
+    public void setPollInterval(long pollInterval)
+    {
+        this.pollInterval = pollInterval;
+    }
+
+    public long getPollInterval()
+    {
+        return this.pollInterval;
+    }
+
+    public void setLoadLimitPerc(int percentage)
+    {
+        this.loadLimitPerc = percentage;
+    }
+
+    public int getLoadLimitPerc()
+    {
+        return this.loadLimitPerc;
     }
 
     public void startMonitor()
@@ -63,15 +97,65 @@ public class ServerMonitor
         }
     }
 
+    public Boolean isRunning()
+    {
+        return this.serviceRunning;
+    }
+
     public synchronized Boolean addServer(Server server)
     {
+        if(!server.getOperationalState())
+        {
+            System.out.println("Server: '" + server.getIpaddr() + "' is not operational.");
+            System.out.println("Server will be ignored...");
+
+            return false;
+        }
+
         if(!servers.contains(server))
         {
-            return servers.add(server);
+            if(serverPoller.pollServerLoad(server, 8080, "/SystemTracker/systemLoad") != null)
+            {
+                return servers.add(server);
+            }
+            else
+            {
+                System.out.println("System Tracker is not responding for server: " + server.getIpaddr());
+                System.out.println("Server will be ignored...");
+
+                return false;
+            }
         }
         else
         {
             return false;
+        }
+    }
+
+    public synchronized Boolean addServer(Server server, Boolean forced)
+    {
+        if(!forced)
+        {
+            return this.addServer(server);
+        }
+        else
+        {
+            if(!servers.contains(server))
+            {
+                return servers.add(server);
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+
+    public synchronized void addServers(List<Server> servers)
+    {
+        for(Server server : servers)
+        {
+            addServer(server);
         }
     }
 
@@ -85,6 +169,11 @@ public class ServerMonitor
         {
             return false;
         }
+    }
+
+    public synchronized void clearServerList()
+    {
+        servers.clear();
     }
 
     public List<Server> getServers()
@@ -124,8 +213,15 @@ public class ServerMonitor
                     }
 
                     nextPollTime = new Date().getTime() + pollInterval;
+
+                    analyzeMonitorResults();
                 }
             }
         }
+    }
+
+    private void analyzeMonitorResults()
+    {
+
     }
 }

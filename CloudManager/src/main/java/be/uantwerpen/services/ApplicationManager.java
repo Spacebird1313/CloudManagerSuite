@@ -5,6 +5,9 @@ import be.uantwerpen.models.User;
 import be.uantwerpen.terminal.Terminal;
 import org.springframework.stereotype.Service;
 
+import java.util.Observable;
+import java.util.Observer;
+
 /**
  * Created by Thomas on 21/02/2016.
  */
@@ -13,11 +16,22 @@ public class ApplicationManager
 {
     private static Terminal terminal;
     private static Cloud oneCloud;
+    private static ServerMonitor serverMonitor;
 
     public ApplicationManager()
     {
         terminal = new Terminal(this);
         oneCloud = new Cloud();
+        serverMonitor = new ServerMonitor();
+
+        serverMonitor.getObserver().addObserver(new Observer()
+        {
+            @Override
+            public void update(Observable source, Object object)
+            {
+                executeMonitorAction((String) object);
+            }
+        });
     }
 
     public static void systemReady()
@@ -76,17 +90,49 @@ public class ApplicationManager
 
     public boolean instantiateVM(int templateID)
     {
-        return CloudManager.createVMFromTemplate(oneCloud, templateID);
+        int vmId = CloudManager.createVMFromTemplate(oneCloud, templateID);
+
+        if(vmId == -1)
+        {
+            return false;
+        }
+
+        if(serverMonitor.isRunning())
+        {
+            serverMonitor.addServer(oneCloud.getServerById(vmId), true);
+        }
+
+        return true;
     }
 
     public boolean instantiateVM(String templateName)
     {
-        return CloudManager.createVMFromTemplate(oneCloud, templateName);
+        int vmId = CloudManager.createVMFromTemplate(oneCloud, templateName);
+
+        if(vmId == -1)
+        {
+            return false;
+        }
+
+        if(serverMonitor.isRunning())
+        {
+            serverMonitor.addServer(oneCloud.getServerById(vmId), true);
+        }
+
+        return true;
     }
 
     public boolean deleteVM(int vmId)
     {
-        return CloudManager.deleteVM(oneCloud, vmId);
+        boolean status = CloudManager.deleteVM(oneCloud, vmId);
+
+        if(serverMonitor.isRunning() && status)
+        {
+            serverMonitor.clearServerList();
+            serverMonitor.addServers(oneCloud.getServers());
+        }
+
+        return status;
     }
 
     public void clearCloudInfo()
@@ -100,6 +146,29 @@ public class ApplicationManager
     public void updateCloudInfo()
     {
         CloudManager.loadServerList(oneCloud);
+
+        if(serverMonitor.isRunning())
+        {
+            serverMonitor.addServers(oneCloud.getServers());
+        }
+    }
+
+    public void startMonitoring()
+    {
+        serverMonitor.clearServerList();
+        serverMonitor.addServers(oneCloud.getServers());
+
+        serverMonitor.startMonitor();
+    }
+
+    public void stopMonitoring()
+    {
+        serverMonitor.stopMonitor();
+    }
+
+    public boolean getMonitoringState()
+    {
+        return serverMonitor.isRunning();
     }
 
     public void printServersStatus()
@@ -115,5 +184,10 @@ public class ApplicationManager
     public void exitSystem()
     {
         System.exit(0);
+    }
+
+    private void executeMonitorAction(String monitorAction)
+    {
+        System.out.println("RECEIVED ACTION: " + monitorAction);
     }
 }

@@ -42,6 +42,19 @@ public class Cloud
         return this.servers;
     }
 
+    public Server getServerById(int vmId)
+    {
+        for(Server server : servers)
+        {
+            if(server.getID() == vmId)
+            {
+                return server;
+            }
+        }
+
+        return null;
+    }
+
     private boolean addServer(Server server)
     {
         if(!this.servers.contains(server))
