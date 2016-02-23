@@ -16,6 +16,7 @@ public class Server
     private int historyCounter;
     private Boolean historyFull;
     private Boolean operational;
+    private Boolean bootUp;
 
     public Server(int vmId, String ipaddr)
     {
@@ -25,6 +26,7 @@ public class Server
         this.historyFull = false;
         this.historyCounter = 0;
         this.operational = false;
+        this.bootUp = false;
         this.CPUloads = new Double[maxHistory];
         this.memFree = new Long[maxHistory];
         this.memTotal = -1L;
@@ -38,6 +40,7 @@ public class Server
         this.historyFull = false;
         this.historyCounter = 0;
         this.operational = false;
+        this.bootUp = false;
         this.CPUloads = new Double[maxHistory];
         this.memFree = new Long[maxHistory];
         this.memTotal = -1L;
@@ -61,6 +64,16 @@ public class Server
     public Boolean getOperationalState()
     {
         return this.operational;
+    }
+
+    public void setBootState(Boolean bootUp)
+    {
+        this.bootUp = bootUp;
+    }
+
+    public Boolean getBootState()
+    {
+        return this.bootUp;
     }
 
     public void addLoadState(double CPULoad, long memFree, long memTotal)

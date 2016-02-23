@@ -1,6 +1,7 @@
 package be.uantwerpen.services;
 
 import be.uantwerpen.models.Cloud;
+import be.uantwerpen.models.Server;
 import be.uantwerpen.models.User;
 import be.uantwerpen.terminal.Terminal;
 import org.springframework.stereotype.Service;
@@ -99,7 +100,10 @@ public class ApplicationManager
 
         if(serverMonitor.isRunning())
         {
-            serverMonitor.addServer(oneCloud.getServerById(vmId), true);
+            Server newServer = oneCloud.getServerById(vmId);
+            newServer.setBootState(true);
+
+            serverMonitor.addServer(newServer, true);
         }
 
         return true;
@@ -116,7 +120,10 @@ public class ApplicationManager
 
         if(serverMonitor.isRunning())
         {
-            serverMonitor.addServer(oneCloud.getServerById(vmId), true);
+            Server newServer = oneCloud.getServerById(vmId);
+            newServer.setBootState(true);
+
+            serverMonitor.addServer(newServer, true);
         }
 
         return true;
@@ -141,6 +148,11 @@ public class ApplicationManager
         User oldCloudUser = oneCloud.getLoginCredentials();
 
         oneCloud = new Cloud(oldCloudURL, oldCloudUser);
+
+        if(serverMonitor.isRunning())
+        {
+            serverMonitor.clearServerList();
+        }
     }
 
     public void updateCloudInfo()
@@ -188,6 +200,11 @@ public class ApplicationManager
 
     private void executeMonitorAction(String monitorAction)
     {
-        System.out.println("RECEIVED ACTION: " + monitorAction);
+        if(monitorAction.toLowerCase().equals("vm overload"))
+        {
+            System.out.println("Instantiating new VM...");
+
+            this.instantiateVM(17);
+        }
     }
 }

@@ -22,6 +22,7 @@ public class ServerMonitor
     private Observer observer;
 
     private int loadLimitPerc;
+    private int numOfSamplePoints;
 
     public ServerMonitor()
     {
@@ -32,6 +33,7 @@ public class ServerMonitor
         this.observer = new Observer();
 
         this.loadLimitPerc = 89;
+        this.numOfSamplePoints = 10;
     }
 
     public ServerMonitor(long pollInterval)
@@ -43,6 +45,7 @@ public class ServerMonitor
         this.observer = new Observer();
 
         this.loadLimitPerc = 89;
+        this.numOfSamplePoints = 10;
     }
 
     public Observer getObserver()
@@ -112,23 +115,26 @@ public class ServerMonitor
             return false;
         }
 
-        if(!servers.contains(server))
+        synchronized(servers)
         {
-            if(serverPoller.pollServerLoad(server, 8080, "/SystemTracker/systemLoad") != null)
+            if(!servers.contains(server))
             {
-                return servers.add(server);
+                if(serverPoller.pollServerLoad(server, 8080, "/SystemTracker/systemLoad") != null)
+                {
+                    return servers.add(server);
+                }
+                else
+                {
+                    System.out.println("System Tracker is not responding for server: " + server.getIpaddr());
+                    System.out.println("Server will be ignored...");
+
+                    return false;
+                }
             }
             else
             {
-                System.out.println("System Tracker is not responding for server: " + server.getIpaddr());
-                System.out.println("Server will be ignored...");
-
                 return false;
             }
-        }
-        else
-        {
-            return false;
         }
     }
 
@@ -140,9 +146,38 @@ public class ServerMonitor
         }
         else
         {
+            synchronized(servers)
+            {
+                if(!servers.contains(server))
+                {
+                    return servers.add(server);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    public synchronized void addServers(List<Server> servers)
+    {
+        synchronized(servers)
+        {
+            for(Server server : servers)
+            {
+                addServer(server);
+            }
+        }
+    }
+
+    public synchronized Boolean removeServer(Server server)
+    {
+        synchronized(servers)
+        {
             if(!servers.contains(server))
             {
-                return servers.add(server);
+                return servers.remove(server);
             }
             else
             {
@@ -151,34 +186,12 @@ public class ServerMonitor
         }
     }
 
-    public synchronized void addServers(List<Server> servers)
-    {
-        for(Server server : servers)
-        {
-            addServer(server);
-        }
-    }
-
-    public synchronized Boolean removeServer(Server server)
-    {
-        if(!servers.contains(server))
-        {
-            return servers.remove(server);
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     public synchronized void clearServerList()
     {
-        servers.clear();
-    }
-
-    public List<Server> getServers()
-    {
-        return this.servers;
+        synchronized(servers)
+        {
+            servers.clear();
+        }
     }
 
     private class MonitorThread implements Runnable
@@ -192,29 +205,39 @@ public class ServerMonitor
             {
                 if(nextPollTime <= new Date().getTime())
                 {
-                    for(Server server : servers)
+                    synchronized(servers)
                     {
-                        if(serviceRunning)
+                        for(Server server : servers)
                         {
-                            if(serverPoller.pollServerLoad(server, 8080, "/SystemTracker/systemLoad") != null)
+                            if(serviceRunning)
                             {
-                                server.setOperationalState(true);
+                                if(server.getBootState())
+                                {
+                                    if(serverPoller.pollServer(server, 8080, "/SystemTracker/systemLoad"))
+                                    {
+                                        server.setBootState(false);
+                                    }
+                                }
+                                else if(serverPoller.pollServerLoad(server, 8080, "/SystemTracker/systemLoad") != null)
+                                {
+                                    server.setOperationalState(true);
+                                }
+                                else
+                                {
+                                    server.setOperationalState(false);
+                                }
                             }
                             else
                             {
-                                server.setOperationalState(false);
+                                //Break polling sequence
+                                return;
                             }
                         }
-                        else
-                        {
-                            //Break polling sequence
-                            return;
-                        }
+
+                        nextPollTime = new Date().getTime() + pollInterval;
+
+                        analyzeMonitorResults();
                     }
-
-                    nextPollTime = new Date().getTime() + pollInterval;
-
-                    analyzeMonitorResults();
                 }
             }
         }
@@ -222,6 +245,31 @@ public class ServerMonitor
 
     private void analyzeMonitorResults()
     {
+        boolean serverBooting = false;
+        boolean serverOverloaded = false;
 
+        for(Server server : servers)
+        {
+            if(server.getOperationalState())
+            {
+                if(server.getAverageCPULoad(this.numOfSamplePoints) > this.loadLimitPerc)
+                {
+                    serverOverloaded = true;
+
+                    System.out.println("Server: " + server.getIpaddr() + " is overloaded! (" + server.getAverageCPULoad(this.numOfSamplePoints) + "%) Consider to start an complementary VM!");
+                }
+            }
+
+            if(server.getBootState())
+            {
+                serverBooting = true;
+            }
+        }
+
+        if(serverOverloaded && !serverBooting)
+        {
+            observer.notifyObservers("VM Overload");
+            observer.setChanged();
+        }
     }
 }
