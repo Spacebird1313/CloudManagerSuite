@@ -16,6 +16,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
         http.authorizeRequests().antMatchers("/systemLoad")
                                     .permitAll();
 
+        http.authorizeRequests().antMatchers("/systemConfig")
+                                    .permitAll();
+
         http.authorizeRequests().antMatchers("/")
                                     .permitAll()
                                     .anyRequest()

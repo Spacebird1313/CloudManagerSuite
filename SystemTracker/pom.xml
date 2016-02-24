@@ -5,11 +5,11 @@
 
 	<groupId>be.uantwerpen</groupId>
 	<artifactId>SystemTracker</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<name>SystemTracker</name>
-	<description>Application to monitior the state of the server</description>
+	<description>Application to monitor the state of the server</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>

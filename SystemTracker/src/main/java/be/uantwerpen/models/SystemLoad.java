@@ -12,12 +12,12 @@ public class SystemLoad
     private final long memFree;
     private final long memInUse;
 
-    public SystemLoad(long id, String timeStamp, double CPULoad, long mamTotal, long memFree, long memInUse)
+    public SystemLoad(long id, String timeStamp, double CPULoad, long memTotal, long memFree, long memInUse)
     {
         this.id = id;
         this.timeStamp = timeStamp;
         this.CPULoad = CPULoad;
-        this.memTotal = mamTotal;
+        this.memTotal = memTotal;
         this.memFree = memFree;
         this.memInUse = memInUse;
     }
