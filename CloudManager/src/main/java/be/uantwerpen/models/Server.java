@@ -1,7 +1,5 @@
 package be.uantwerpen.models;
 
-import org.opennebula.client.vm.VirtualMachine;
-
 /**
  * Created by Thomas on 13/02/2016.
  */
@@ -14,6 +12,7 @@ public class Server
     private Long memTotal;
     private static int maxHistory;
     private int historyCounter;
+    private String vmPool;
     private Boolean historyFull;
     private Boolean operational;
     private Boolean bootUp;
@@ -27,6 +26,7 @@ public class Server
         this.historyCounter = 0;
         this.operational = false;
         this.bootUp = false;
+        this.vmPool = "default";
         this.CPUloads = new Double[maxHistory];
         this.memFree = new Long[maxHistory];
         this.memTotal = -1L;
@@ -41,6 +41,7 @@ public class Server
         this.historyCounter = 0;
         this.operational = false;
         this.bootUp = false;
+        this.vmPool = "default";
         this.CPUloads = new Double[maxHistory];
         this.memFree = new Long[maxHistory];
         this.memTotal = -1L;
@@ -64,6 +65,16 @@ public class Server
     public Boolean getOperationalState()
     {
         return this.operational;
+    }
+
+    public void setVMPool(String vmPool)
+    {
+        this.vmPool = vmPool;
+    }
+
+    public String getVmPool()
+    {
+        return this.vmPool;
     }
 
     public void setBootState(Boolean bootUp)

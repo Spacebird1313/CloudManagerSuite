@@ -1,6 +1,7 @@
 package be.uantwerpen.services;
 
 import be.uantwerpen.models.Server;
+import be.uantwerpen.models.ServerConfig;
 import be.uantwerpen.tools.Observer;
 import org.springframework.stereotype.Service;
 
@@ -213,8 +214,11 @@ public class ServerMonitor
                             {
                                 if(server.getBootState())
                                 {
-                                    if(serverPoller.pollServer(server, 8080, "/SystemTracker/systemLoad"))
+                                    ServerConfig serverConfig = serverPoller.getServerConfig(server, 8080, "/SystemTracker/systemConfig");
+
+                                    if(serverConfig != null)
                                     {
+                                        server.setVMPool(serverConfig.getVmPool());
                                         server.setBootState(false);
                                     }
                                 }

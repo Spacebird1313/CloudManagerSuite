@@ -1,6 +1,7 @@
 package be.uantwerpen.services;
 
 import be.uantwerpen.models.Server;
+import be.uantwerpen.models.ServerConfig;
 import be.uantwerpen.models.ServerLoad;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -53,11 +54,11 @@ public class ServerPoller
         return serverLoad;
     }
 
-    public boolean pollServer(Server server, int serverPort, String serviceURL)
+    public ServerConfig getServerConfig(Server server, int serverPort, String serviceURL)
     {
         RestTemplate restTemplate = new RestTemplate();
         URL serverURL;
-        ServerLoad serverLoad;
+        ServerConfig serverConfig;
 
         //Set timeout of poll event
         SimpleClientHttpRequestFactory rf = (SimpleClientHttpRequestFactory) restTemplate.getRequestFactory();
@@ -72,23 +73,23 @@ public class ServerPoller
         {
             System.err.println("Cannot form correct URL to contact server: " + server.getIpaddr());
 
-            return false;
+            return null;
         }
 
         try
         {
-            serverLoad = restTemplate.getForObject(serverURL.toString(), ServerLoad.class);
+            serverConfig = restTemplate.getForObject(serverURL.toString(), ServerConfig.class);
         }
         catch(RestClientException e)
         {
-            return false;
+            return null;
         }
 
-        if(serverLoad != null)
+        if(serverConfig != null)
         {
-            return true;
+            return serverConfig;
         }
 
-        return false;
+        return null;
     }
 }

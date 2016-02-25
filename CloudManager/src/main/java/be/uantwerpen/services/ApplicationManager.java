@@ -204,7 +204,7 @@ public class ApplicationManager
         {
             System.out.println("Instantiating new VM...");
 
-            this.instantiateVM(17);
+            this.instantiateVM(19);
         }
     }
 }
